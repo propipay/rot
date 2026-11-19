@@ -34,7 +34,7 @@ button.ghost { background: var(--accent-soft); color: var(--text); }
 label { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; font-size: .9rem; color: var(--muted); }
 input, textarea { font: inherit; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--text); width: 100%; }
 .glass { position: relative; height: 240px; width: 140px; margin: 24px auto; border: 3px solid var(--water); border-top: 0; border-radius: 0 0 28px 28px; overflow: hidden; display: grid; place-items: center; }
-.glass .fill { position: absolute; bottom: 0; left: 0; right: 0; background: var(--water); opacity: .35; transition: height .4s; }
+.glass .fill { position: absolute; bottom: 0; left: 0; right: 0; background: var(--water); opacity: .45; transition: height .4s; }
 .glass span { position: relative; font-size: 1.4rem; font-weight: 700; }
 .routine { padding-left: 20px; line-height: 1.9; }
 .timer { font-size: 3rem; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; margin: 16px 0; }
