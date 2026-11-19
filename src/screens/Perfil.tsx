@@ -9,7 +9,7 @@ export function Perfil({ profile, onSave, email }: { profile: Profile; onSave: (
 
   const sendLink = async () => {
     if (!supabase) return
-    const { error } = await supabase.auth.signInWithOtp({ email: loginEmail, options: { shouldCreateUser: false, emailRedirectTo: window.location.origin } })
+    const { error } = await supabase.auth.signInWithOtp({ email: loginEmail, options: { shouldCreateUser: true, emailRedirectTo: window.location.origin } })
     setMsg(error ? 'No se pudo enviar el enlace. Revisa el correo.' : 'Te enviamos un enlace de acceso a tu correo.')
   }
 
