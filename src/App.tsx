@@ -2,23 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from './lib/supabase'
 import { DEFAULT_PROFILE, emptyLog, loadLog, loadProfile, saveLog, saveProfile, type DailyLog, type Profile } from './lib/store'
 import { todayKey } from './lib/time'
+import { TabBar, type Tab } from './components/TabBar'
 import { Hoy } from './screens/Hoy'
-import { Agua } from './screens/Agua'
-import { Ejercicio } from './screens/Ejercicio'
-import { Sueno } from './screens/Sueno'
-import { Perfil } from './screens/Perfil'
-
-type Tab = 'hoy' | 'agua' | 'ejercicio' | 'sueno' | 'perfil'
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: 'hoy', label: 'Hoy', icon: '☀' },
-  { id: 'agua', label: 'Agua', icon: '💧' },
-  { id: 'ejercicio', label: 'Ejercicio', icon: '🏃' },
-  { id: 'sueno', label: 'Sueño', icon: '🌙' },
-  { id: 'perfil', label: 'Perfil', icon: '♥' },
-]
+import { Bienestar, type Sub } from './screens/Bienestar'
+import { Habitos } from './screens/Habitos'
+import { Cielo } from './screens/Cielo'
+import { Mas } from './screens/Mas'
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('hoy')
+  const [sub, setSub] = useState<Sub>('agua')
   const [day] = useState(todayKey())
   const [log, setLog] = useState<DailyLog>(emptyLog(day))
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE)
@@ -34,6 +27,8 @@ export default function App() {
     return () => sub.subscription.unsubscribe()
   }, [day])
 
+  const go = (t: Tab) => { setTab(t); window.scrollTo({ top: 0 }) }
+
   const updateLog = (l: DailyLog) => {
     setLog(l)
     if (timer.current) clearTimeout(timer.current)
@@ -43,20 +38,14 @@ export default function App() {
 
   return (
     <div className="app">
+      <TabBar tab={tab} onChange={go} />
       <main>
-        {tab === 'hoy' && <Hoy log={log} profile={profile} onSave={updateLog} />}
-        {tab === 'agua' && <Agua log={log} profile={profile} onSave={updateLog} />}
-        {tab === 'ejercicio' && <Ejercicio log={log} profile={profile} onSave={updateLog} />}
-        {tab === 'sueno' && <Sueno log={log} profile={profile} onSave={updateLog} />}
-        {tab === 'perfil' && <Perfil profile={profile} onSave={updateProfile} email={email} />}
+        {tab === 'hoy' && <Hoy log={log} profile={profile} onSave={updateLog} onOpen={(s) => { setSub(s); go('bienestar') }} />}
+        {tab === 'bienestar' && <Bienestar sub={sub} onSub={setSub} log={log} profile={profile} onSave={updateLog} />}
+        {tab === 'habitos' && <Habitos />}
+        {tab === 'cielo' && <Cielo />}
+        {tab === 'mas' && <Mas profile={profile} onSave={updateProfile} email={email} />}
       </main>
-      <nav className="tabs">
-        {TABS.map((t) => (
-          <button key={t.id} className={tab === t.id ? 'on' : ''} onClick={() => setTab(t.id)} aria-label={t.label}>
-            <span aria-hidden>{t.icon}</span>{t.label}
-          </button>
-        ))}
-      </nav>
     </div>
   )
 }

@@ -32,7 +32,6 @@ export function Ejercicio({ log, profile, onSave }: { log: DailyLog; profile: Pr
 
   return (
     <section>
-      <h1>Ejercicio</h1>
       <p className="muted">Hoy: {routine.name} · meta {profile.exercise_goal_min} min · llevas {log.exercise_min} min</p>
       <ol className="routine">{routine.items.map((i) => <li key={i}>{i}</li>)}</ol>
       <div className="timer">{mm}:{ss}</div>
