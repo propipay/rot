@@ -128,3 +128,13 @@ input, textarea { font: inherit; padding: 12px; border-radius: 10px; border: 1px
   .agua-top { gap: 16px; }
   .grande { font-size: 1.7rem; }
 }
+
+/* Inicio de sesión */
+.cargando { min-height: 100dvh; background: var(--bg); }
+.login { min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px calc(24px + env(safe-area-inset-bottom)); }
+.login-card { width: 100%; max-width: 400px; text-align: center; padding: 32px 24px; }
+.login-card form { text-align: left; margin-top: 8px; }
+.login-card button { width: 100%; }
+.corazon { display: inline-block; margin-bottom: 8px; }
+.aviso { display: flex; gap: 10px; align-items: flex-start; text-align: left; background: var(--water-soft); border-radius: 12px; padding: 12px; margin-top: 12px; }
+.error { color: #b3261e; }
