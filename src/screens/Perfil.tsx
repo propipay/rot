@@ -15,7 +15,7 @@ export function Perfil({ profile, onSave, email }: { profile: Profile; onSave: (
 
   return (
     <section>
-      <h1>Perfil</h1>
+      <h1 className="serif">Perfil</h1>
       <label>Nombre<input value={p.display_name} onChange={(e) => setP({ ...p, display_name: e.target.value })} /></label>
       <label>Meta de agua (ml)<input type="number" step={250} value={p.water_goal_ml} onChange={(e) => setP({ ...p, water_goal_ml: Number(e.target.value) })} /></label>
       <label>Meta de ejercicio (min)<input type="number" step={5} value={p.exercise_goal_min} onChange={(e) => setP({ ...p, exercise_goal_min: Number(e.target.value) })} /></label>

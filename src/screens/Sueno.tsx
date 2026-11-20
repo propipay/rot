@@ -5,7 +5,6 @@ export function Sueno({ log, profile, onSave }: { log: DailyLog; profile: Profil
   const h = sleepHours(log.sleep_start, log.sleep_end)
   return (
     <section>
-      <h1>Sueño</h1>
       <p className="muted">Meta: {profile.sleep_goal_h} h · a la cama 10:30 PM, arriba 7:00 AM</p>
       <label>Anoche me dormí a las
         <input type="time" value={log.sleep_start ?? ''} onChange={(e) => onSave({ ...log, sleep_start: e.target.value || null })} />

@@ -21,3 +21,13 @@ export const hm = (s: string) => {
   const [h, m] = s.split(':').map(Number)
   return h * 60 + m
 }
+
+/** Hora corta en Caracas, ej. "07:12 AM" */
+export function clockCaracas(iso: string): string {
+  return new Intl.DateTimeFormat('en-US', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: true }).format(new Date(iso)).replace(/ /g, ' ')
+}
+
+/** Minutos desde medianoche en Caracas para una fecha ISO */
+export function minutesCaracas(iso: string): number {
+  return nowInCaracas(new Date(iso)).minutes
+}
