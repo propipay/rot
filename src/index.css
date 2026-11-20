@@ -138,3 +138,39 @@ input, textarea { font: inherit; padding: 12px; border-radius: 10px; border: 1px
 .corazon { display: inline-block; margin-bottom: 8px; }
 .aviso { display: flex; gap: 10px; align-items: flex-start; text-align: left; background: var(--water-soft); border-radius: 12px; padding: 12px; margin-top: 12px; }
 .error { color: #b3261e; }
+
+/* Nutrición */
+.comida-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.comida-head h2 { margin: 0; }
+.comida.hecha { border-color: color-mix(in srgb, var(--ok) 45%, var(--line)); }
+.ok { display: inline-flex; align-items: center; gap: 4px; color: var(--ok); font-size: .82rem; font-weight: 600; }
+.chip.on { background: var(--accent-soft); border-color: var(--accent); }
+.agua .chip.on { background: var(--water-soft); border-color: var(--water); }
+.energia { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.nota { margin-top: 12px; }
+
+/* Hábitos */
+.racha .contador { font-size: 1.15rem; margin: 4px 0 6px; }
+.racha .contador strong { font-family: var(--serif); font-size: 2.6rem; font-weight: 600; color: var(--accent); }
+.hito { margin: 8px 0; }
+.hito-texto { display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--muted); }
+.hitos { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.hito-chip { font-size: .72rem; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-variant-numeric: tabular-nums; }
+.hito-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.enlace { background: none; color: var(--muted); padding: 8px 0; min-height: 40px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+.enlace.peligro { color: #b3261e; }
+.tropiezo { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 4px; }
+.historial-rachas summary { cursor: pointer; color: var(--muted); padding: 6px 0; }
+.historial-rachas ul { margin: 4px 0 0; padding-left: 18px; }
+.lista-habitos { padding: 4px 16px; }
+.habito { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+.habito + .habito { border-top: 1px solid var(--line); }
+.check { width: 44px; height: 44px; min-height: 44px; padding: 0; flex: none; border-radius: 50%; background: var(--surface); border: 2px solid var(--line); color: #fff; display: grid; place-items: center; }
+.check.on { background: var(--ok); border-color: var(--ok); }
+.habito-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.habito-info strong { font-weight: 600; overflow-wrap: anywhere; }
+.semana { display: flex; gap: 3px; flex: none; }
+.dia { width: 18px; height: 22px; border-radius: 5px; background: var(--accent-soft); font-size: .6rem; display: grid; place-items: center; color: var(--muted); }
+.dia.on { background: var(--ok); color: #fff; }
+.ancho { width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; margin-top: 8px; }
+@media (max-width: 380px) { .semana { display: none; } }
