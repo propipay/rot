@@ -6,6 +6,7 @@ import { todayKey } from './lib/time'
 import { flushOutbox } from './lib/sync'
 import { loadMeals, type Meal } from './lib/nutrition'
 import { loadHabits, type HabitsState } from './lib/habits'
+import { cachedSky, loadSky, type SkyInsight } from './lib/sky'
 import { TabBar, type Tab } from './components/TabBar'
 import { Hoy } from './screens/Hoy'
 import { Bienestar, type Sub } from './screens/Bienestar'
@@ -38,12 +39,15 @@ function Panel({ email }: { email: string | null }) {
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE)
   const [meals, setMeals] = useState<Meal[]>([])
   const [habits, setHabits] = useState<HabitsState>({ habits: [], logs: [] })
+  // undefined = cargando; null = no disponible
+  const [sky, setSky] = useState<SkyInsight | null | undefined>(() => cachedSky() ?? undefined)
   const timer = useRef<number | null>(null)
 
   useEffect(() => {
     const refresh = () => flushPending().then(() => {
       loadLog(day).then(setLog); loadProfile().then(setProfile)
       loadMeals(day).then(setMeals); loadHabits().then(setHabits)
+      loadSky().then(setSky)
     })
     refresh()
     window.addEventListener('online', refresh)
@@ -71,10 +75,10 @@ function Panel({ email }: { email: string | null }) {
     <div className="app">
       <TabBar tab={tab} onChange={go} />
       <main>
-        {tab === 'hoy' && <Hoy log={log} profile={profile} meals={meals} habits={habits} onSave={updateLog} onOpen={(s) => { setSub(s); go('bienestar') }} onHabits={() => go('habitos')} />}
+        {tab === 'hoy' && <Hoy log={log} profile={profile} meals={meals} habits={habits} onSave={updateLog} onOpen={(s) => { setSub(s); go('bienestar') }} sky={sky} onHabits={() => go('habitos')} onCielo={() => go('cielo')} />}
         {tab === 'bienestar' && <Bienestar sub={sub} onSub={setSub} log={log} profile={profile} onSave={updateLog} meals={meals} onMeals={setMeals} />}
         {tab === 'habitos' && <Habitos state={habits} onChange={setHabits} />}
-        {tab === 'cielo' && <Cielo />}
+        {tab === 'cielo' && <Cielo sky={sky} onSky={setSky} />}
         {tab === 'mas' && <Mas profile={profile} onSave={updateProfile} email={email} onSignOut={signOut} />}
       </main>
     </div>
