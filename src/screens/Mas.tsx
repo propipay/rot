@@ -6,13 +6,13 @@ import { Pronto } from '../components/Pronto'
 
 type View = 'menu' | 'recordatorios' | 'roadoflove' | 'perfil'
 
-export function Mas({ profile, onSave, email }: { profile: Profile; onSave: (p: Profile) => void; email: string | null }) {
+export function Mas({ profile, onSave, email, onSignOut }: { profile: Profile; onSave: (p: Profile) => void; email: string | null; onSignOut: () => void }) {
   const [view, setView] = useState<View>('menu')
   if (view !== 'menu') {
     return (
       <section>
         <button className="volver" onClick={() => setView('menu')}><ChevronLeft size={18} strokeWidth={1.75} aria-hidden /> Más</button>
-        {view === 'perfil' && <Perfil profile={profile} onSave={onSave} email={email} />}
+        {view === "perfil" && <Perfil profile={profile} onSave={onSave} email={email} onSignOut={onSignOut} />}
         {view === 'recordatorios' && (
           <>
             <h1 className="serif">Recordatorios</h1>

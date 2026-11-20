@@ -2,17 +2,8 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Profile } from '../lib/store'
 
-export function Perfil({ profile, onSave, email }: { profile: Profile; onSave: (p: Profile) => void; email: string | null }) {
+export function Perfil({ profile, onSave, email, onSignOut }: { profile: Profile; onSave: (p: Profile) => void; email: string | null; onSignOut: () => void }) {
   const [p, setP] = useState(profile)
-  const [loginEmail, setLoginEmail] = useState('')
-  const [msg, setMsg] = useState('')
-
-  const sendLink = async () => {
-    if (!supabase) return
-    const { error } = await supabase.auth.signInWithOtp({ email: loginEmail, options: { shouldCreateUser: true, emailRedirectTo: window.location.origin } })
-    setMsg(error ? 'No se pudo enviar el enlace. Revisa el correo.' : 'Te enviamos un enlace de acceso a tu correo.')
-  }
-
   return (
     <section>
       <h1 className="serif">Perfil</h1>
@@ -23,15 +14,11 @@ export function Perfil({ profile, onSave, email }: { profile: Profile; onSave: (
       <button onClick={() => onSave(p)}>Guardar perfil</button>
 
       <h3>Cuenta</h3>
-      {!supabase && <p className="muted small">Modo local: tus datos se guardan solo en este teléfono hasta conectar la base de datos privada.</p>}
+      {!supabase && <p className="muted small">Modo local: tus datos se guardan solo en este teléfono.</p>}
       {supabase && email && (
-        <p className="small">Sesión iniciada como {email}. <button className="ghost" onClick={() => supabase!.auth.signOut()}>Cerrar sesión</button></p>
-      )}
-      {supabase && !email && (
         <>
-          <label>Tu correo<input type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} /></label>
-          <button onClick={sendLink} disabled={!loginEmail}>Enviarme enlace de acceso</button>
-          {msg && <p className="small">{msg}</p>}
+          <p className="small">Sesión iniciada como <strong>{email}</strong>.</p>
+          <button className="ghost" onClick={onSignOut}>Cerrar sesión</button>
         </>
       )}
     </section>
