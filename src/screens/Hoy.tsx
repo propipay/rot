@@ -5,12 +5,15 @@ import { sleepHours } from '../lib/store'
 import type { Sub } from './Bienestar'
 import { mealSummary, type Meal } from '../lib/nutrition'
 import { streakParts, type HabitsState } from '../lib/habits'
+import { ChevronRight } from 'lucide-react'
+import type { SkyInsight } from '../lib/sky'
+import { Luna } from '../components/Luna'
 
 const DAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
 
-type Props = { log: DailyLog; profile: Profile; meals: Meal[]; habits: HabitsState; onSave: (l: DailyLog) => void; onOpen: (s: Sub) => void; onHabits: () => void }
+type Props = { log: DailyLog; profile: Profile; meals: Meal[]; habits: HabitsState; sky: SkyInsight | null | undefined; onSave: (l: DailyLog) => void; onOpen: (s: Sub) => void; onHabits: () => void; onCielo: () => void }
 
-export function Hoy({ log, profile, meals, habits, onSave, onOpen, onHabits }: Props) {
+export function Hoy({ log, profile, meals, habits, sky, onSave, onOpen, onHabits, onCielo }: Props) {
   const { minutes, weekday } = nowInCaracas()
   const blocks = blocksFor(weekday)
   const current = blocks.find((b) => minutes >= hm(b.start) && minutes < hm(b.end))
@@ -50,6 +53,8 @@ export function Hoy({ log, profile, meals, habits, onSave, onOpen, onHabits }: P
           {quit && <Stat label={quit.name} value={streak ? `${streak.days} d ${streak.hours} h` : 'Configurar'} pct={streak ? streak.progress : 0} onClick={onHabits} />}
         </div>
 
+        {sky !== null && <CieloMini sky={sky} onClick={onCielo} />}
+
         <h3>Gratitud de hoy</h3>
         <textarea rows={3} placeholder="Hoy agradezco…" value={log.gratitude} onChange={(e) => onSave({ ...log, gratitude: e.target.value })} />
       </div>
@@ -77,6 +82,20 @@ function Stat({ label, value, pct, onClick }: { label: string; value: string; pc
       <span className="label">{label}</span>
       <strong className="num">{value}</strong>
       <span className="bar"><span style={{ width: `${p * 100}%` }} /></span>
+    </button>
+  )
+}
+
+function CieloMini({ sky, onClick }: { sky: SkyInsight | undefined; onClick: () => void }) {
+  const moon = sky?.astronomy_json.moon
+  return (
+    <button className="card cielo-mini" onClick={onClick}>
+      {moon ? <Luna angle={moon.angle} size={48} /> : <span className="luna-vacia" aria-hidden />}
+      <span className="cielo-mini-texto">
+        <span className="label">Cielo de hoy{moon ? ` · ${moon.phase} ${moon.illumination_pct}%` : ''}</span>
+        <strong className="serif">{sky ? sky.horoscope_json.headline : 'Leyendo el cielo…'}</strong>
+        <span className="enlace">Ver cielo completo <ChevronRight size={16} strokeWidth={1.75} aria-hidden /></span>
+      </span>
     </button>
   )
 }
