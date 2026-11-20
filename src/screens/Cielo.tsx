@@ -1,7 +1,7 @@
-import { ChevronDown, RefreshCw, Sparkles, Sunrise, Sunset } from 'lucide-react'
+import { ChevronDown, MapPin, RefreshCw, Sparkles, Sunrise, Sunset } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Luna } from '../components/Luna'
-import { loadAstro, loadSky, type AstroProfile, type SkyInsight } from '../lib/sky'
+import { askPosition, geoPermission, loadAstro, loadSky, type AstroProfile, type SkyInsight } from '../lib/sky'
 import { supabase } from '../lib/supabase'
 import { TZ } from '../lib/time'
 
@@ -15,11 +15,22 @@ export function Cielo({ sky, onSky }: Props) {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
 
-  useEffect(() => { loadAstro().then(setAstro) }, [])
+  const [perm, setPerm] = useState<string>('unsupported')
+
+  useEffect(() => { loadAstro().then(setAstro); geoPermission().then(setPerm) }, [])
 
   const refresh = () => {
     setBusy(true); setErr('')
     loadSky(true).then(onSky).catch(() => setErr('No pude actualizar ahora. Revisa tu conexión e inténtalo de nuevo.')).finally(() => setBusy(false))
+  }
+
+  // Pide la ubicación una vez; desde ahí el Cielo la usa sola cada día
+  const locate = async () => {
+    setBusy(true); setErr('')
+    const coords = await askPosition()
+    setPerm(await geoPermission())
+    if (!coords) { setErr('Sin permiso de ubicación: sigo usando la de tu perfil.'); setBusy(false); return }
+    loadSky(true, coords).then(onSky).catch(() => setErr('No pude actualizar ahora. Inténtalo de nuevo.')).finally(() => setBusy(false))
   }
 
   return (
@@ -48,7 +59,7 @@ export function Cielo({ sky, onSky }: Props) {
         </div>
       )}
 
-      {sky && <CieloHoy sky={sky} busy={busy} err={err} onRefresh={refresh} />}
+      {sky && <CieloHoy sky={sky} busy={busy} err={err} onRefresh={refresh} canLocate={perm === 'prompt'} onLocate={locate} />}
 
       {sky && (
         <div className="cielo-col">
@@ -66,7 +77,7 @@ export function Cielo({ sky, onSky }: Props) {
   )
 }
 
-function CieloHoy({ sky, busy, err, onRefresh }: { sky: SkyInsight; busy: boolean; err: string; onRefresh: () => void }) {
+function CieloHoy({ sky, busy, err, onRefresh, canLocate, onLocate }: { sky: SkyInsight; busy: boolean; err: string; onRefresh: () => void; canLocate: boolean; onLocate: () => void }) {
   const { moon, sun } = sky.astronomy_json
   const h = sky.horoscope_json
   return (
@@ -88,6 +99,11 @@ function CieloHoy({ sky, busy, err, onRefresh }: { sky: SkyInsight; busy: boolea
           <li><Sunset size={18} strokeWidth={1.75} aria-hidden /><span><small>Atardecer</small><strong className="num">{sun.sunset ?? '—'}</strong></span></li>
           <li><Sparkles size={18} strokeWidth={1.75} aria-hidden /><span><small>Sol en</small><strong>{sun.sign}</strong></span></li>
         </ul>
+        <p className="lugar">
+          <MapPin size={14} strokeWidth={1.75} aria-hidden />
+          <span>Calculado para {sky.astronomy_json.place ?? 'tu perfil'}</span>
+          {canLocate && <button className="enlace-boton" onClick={onLocate} disabled={busy}>Usar mi ubicación</button>}
+        </p>
       </div>
 
       <div className="card lectura">

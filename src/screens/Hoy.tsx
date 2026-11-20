@@ -5,15 +5,15 @@ import { sleepHours } from '../lib/store'
 import type { Sub } from './Bienestar'
 import { mealSummary, type Meal } from '../lib/nutrition'
 import { streakParts, type HabitsState } from '../lib/habits'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Plus } from 'lucide-react'
 import type { SkyInsight } from '../lib/sky'
 import { Luna } from '../components/Luna'
 
 const DAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
 
-type Props = { log: DailyLog; profile: Profile; meals: Meal[]; habits: HabitsState; sky: SkyInsight | null | undefined; onSave: (l: DailyLog) => void; onOpen: (s: Sub) => void; onHabits: () => void; onCielo: () => void }
+type Props = { log: DailyLog; profile: Profile; meals: Meal[]; habits: HabitsState; sky: SkyInsight | null | undefined; onSave: (l: DailyLog) => void; onOpen: (s: Sub) => void; onHabits: () => void; onCielo: () => void; onReminder: () => void }
 
-export function Hoy({ log, profile, meals, habits, sky, onSave, onOpen, onHabits, onCielo }: Props) {
+export function Hoy({ log, profile, meals, habits, sky, onSave, onOpen, onHabits, onCielo, onReminder }: Props) {
   const { minutes, weekday } = nowInCaracas()
   const blocks = blocksFor(weekday)
   const current = blocks.find((b) => minutes >= hm(b.start) && minutes < hm(b.end))
@@ -60,7 +60,10 @@ export function Hoy({ log, profile, meals, habits, sky, onSave, onOpen, onHabits
       </div>
 
       <div className="hoy-col">
-        <h3 className="sin-margen-arriba">Agenda de hoy</h3>
+        <div className="agenda-cabecera">
+          <h3 className="sin-margen-arriba">Agenda de hoy</h3>
+          <button className="chip" onClick={onReminder} aria-label="Nuevo recordatorio en Google"><Plus size={16} strokeWidth={1.75} aria-hidden /> Recordatorio</button>
+        </div>
         {blocks.length === 0 && <p className="muted">Fin de semana: sin bloques fijos.</p>}
         <ul className="agenda">
           {blocks.map((b) => (

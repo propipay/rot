@@ -39,15 +39,22 @@ export async function loadHabits(): Promise<HabitsState> {
     ])
     if (h.error || l.error) throw h.error ?? l.error
     const state: HabitsState = { habits: h.data as Habit[], logs: l.data as HabitLog[] }
-    if (state.habits.length === 0) return seed(state)
+    if (state.habits.length === 0) {
+      const { data } = await supabase.auth.getSession()
+      return seed(state, data.session?.user.id)
+    }
     cache.set(KEY, state)
     return state
   } catch { return local }
 }
 
-function seed(state: HabitsState): HabitsState {
+// Con cuenta, los hábitos iniciales usan ids fijos derivados del usuario: si la app se abre
+// en dos pestañas a la vez, ambas escriben las mismas filas y no se duplican.
+const seedId = (uid: string | undefined, i: number) => (uid ? `${uid.slice(0, 24)}${String(i + 1).padStart(12, '0')}` : uuid())
+
+function seed(state: HabitsState, uid?: string): HabitsState {
   const now = new Date().toISOString()
-  const habits = DEFAULTS.map((d, i): Habit => ({ id: uuid(), ...d, started_at: null, best_streak_days: 0, active: true, sort: i, created_at: now }))
+  const habits = DEFAULTS.map((d, i): Habit => ({ id: seedId(uid, i), ...d, started_at: null, best_streak_days: 0, active: true, sort: i, created_at: now }))
   habits.forEach((h) => enqueue({ kind: 'upsert', table: 'habits', row: { ...h } }))
   const next = { ...state, habits }
   cache.set(KEY, next)

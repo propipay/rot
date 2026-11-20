@@ -12,7 +12,7 @@ import { Hoy } from './screens/Hoy'
 import { Bienestar, type Sub } from './screens/Bienestar'
 import { Habitos } from './screens/Habitos'
 import { Cielo } from './screens/Cielo'
-import { Mas } from './screens/Mas'
+import { Mas, type MasView } from './screens/Mas'
 import { Login } from './screens/Login'
 
 export default function App() {
@@ -33,6 +33,7 @@ export default function App() {
 
 function Panel({ email }: { email: string | null }) {
   const [tab, setTab] = useState<Tab>('hoy')
+  const [masStart, setMasStart] = useState<MasView>('menu')
   const [sub, setSub] = useState<Sub>('agua')
   const [day] = useState(todayKey())
   const [log, setLog] = useState<DailyLog>(emptyLog(day))
@@ -73,13 +74,13 @@ function Panel({ email }: { email: string | null }) {
 
   return (
     <div className="app">
-      <TabBar tab={tab} onChange={go} />
+      <TabBar tab={tab} onChange={(t) => { setMasStart('menu'); go(t) }} />
       <main>
-        {tab === 'hoy' && <Hoy log={log} profile={profile} meals={meals} habits={habits} onSave={updateLog} onOpen={(s) => { setSub(s); go('bienestar') }} sky={sky} onHabits={() => go('habitos')} onCielo={() => go('cielo')} />}
+        {tab === 'hoy' && <Hoy log={log} profile={profile} meals={meals} habits={habits} onSave={updateLog} onOpen={(s) => { setSub(s); go('bienestar') }} sky={sky} onHabits={() => go('habitos')} onCielo={() => go('cielo')} onReminder={() => { setMasStart('recordatorios'); go('mas') }} />}
         {tab === 'bienestar' && <Bienestar sub={sub} onSub={setSub} log={log} profile={profile} onSave={updateLog} meals={meals} onMeals={setMeals} />}
         {tab === 'habitos' && <Habitos state={habits} onChange={setHabits} />}
         {tab === 'cielo' && <Cielo sky={sky} onSky={setSky} />}
-        {tab === 'mas' && <Mas profile={profile} onSave={updateProfile} email={email} onSignOut={signOut} />}
+        {tab === 'mas' && <Mas key={masStart} start={masStart} profile={profile} onSave={updateProfile} email={email} onSignOut={signOut} />}
       </main>
     </div>
   )

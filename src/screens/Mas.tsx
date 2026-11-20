@@ -3,22 +3,18 @@ import { useState } from 'react'
 import type { Profile } from '../lib/store'
 import { Perfil } from './Perfil'
 import { Pronto } from '../components/Pronto'
+import { Recordatorios } from './Recordatorios'
 
-type View = 'menu' | 'recordatorios' | 'roadoflove' | 'perfil'
+export type MasView = 'menu' | 'recordatorios' | 'roadoflove' | 'perfil'
 
-export function Mas({ profile, onSave, email, onSignOut }: { profile: Profile; onSave: (p: Profile) => void; email: string | null; onSignOut: () => void }) {
-  const [view, setView] = useState<View>('menu')
+export function Mas({ profile, onSave, email, onSignOut, start = 'menu' }: { profile: Profile; onSave: (p: Profile) => void; email: string | null; onSignOut: () => void; start?: MasView }) {
+  const [view, setView] = useState<MasView>(start)
   if (view !== 'menu') {
     return (
       <section>
         <button className="volver" onClick={() => setView('menu')}><ChevronLeft size={18} strokeWidth={1.75} aria-hidden /> Más</button>
         {view === "perfil" && <Perfil profile={profile} onSave={onSave} email={email} onSignOut={onSignOut} />}
-        {view === 'recordatorios' && (
-          <>
-            <h1 className="serif">Recordatorios</h1>
-            <Pronto titulo="Conectados a Google">Crea un recordatorio aquí y llega directo a tu Google Calendar o Google Tasks.</Pronto>
-          </>
-        )}
+        {view === 'recordatorios' && <Recordatorios focus={start === 'recordatorios'} />}
         {view === 'roadoflove' && (
           <>
             <h1 className="serif">Road of Love</h1>
