@@ -95,30 +95,44 @@ Devuelve SOLO JSON con:
 - focus_pills: exactamente 3 objetos {area, tip} con áreas "Trabajo y Alianzas", "Bienestar", "Vínculos / Mente"; tip de máx. 80 caracteres y accionable hoy
 - sky_event: 1 frase sobre el dato astronómico destacado de hoy o el próximo evento de la lista`
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.7,
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: 'OBJECT',
-          properties: {
-            headline: { type: 'STRING' },
-            personal_horoscope: { type: 'STRING' },
-            focus_pills: { type: 'ARRAY', items: { type: 'OBJECT', properties: { area: { type: 'STRING' }, tip: { type: 'STRING' } }, required: ['area', 'tip'] } },
-            sky_event: { type: 'STRING' },
-          },
-          required: ['headline', 'personal_horoscope', 'focus_pills', 'sky_event'],
-        },
-      },
-    }),
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  const data = await res.json()
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
-  const out = JSON.parse(text)
-  return { headline: String(out.headline), personal_horoscope: String(out.personal_horoscope), focus_pills: (out.focus_pills ?? []).slice(0, 3), sky_event: String(out.sky_event), source: 'gemini' }
+  // Modelo configurable (GEMINI_MODEL); si Google responde 404 se prueba el siguiente.
+  // Los proyectos nuevos ya no tienen acceso a gemini-2.5-*.
+  const models = [...new Set([Deno.env.get('GEMINI_MODEL'), 'gemini-3.8-flash', 'gemini-3.5-flash-lite'].filter(Boolean) as string[])]
+  let last = ''
+  for (const model of models) {
+    for (const withSchema of [true, false]) {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body: BODY(prompt, withSchema),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const out = JSON.parse(data?.candidates?.[0]?.content?.parts?.[0]?.text)
+        return { headline: String(out.headline), personal_horoscope: String(out.personal_horoscope), focus_pills: (out.focus_pills ?? []).slice(0, 3), sky_event: String(out.sky_event), source: 'gemini' }
+      }
+      last = `${model}: HTTP ${res.status} ${(await res.text()).slice(0, 160)}`
+      console.error('Gemini respondió error:', last)
+      if (res.status === 400 && withSchema) continue // reintenta sin esquema estricto
+      break
+    }
+    if (!last.includes('HTTP 404')) break // solo 404 pasa al siguiente modelo
+  }
+  throw new Error(last)
 }
+
+const SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    headline: { type: 'STRING' },
+    personal_horoscope: { type: 'STRING' },
+    focus_pills: { type: 'ARRAY', items: { type: 'OBJECT', properties: { area: { type: 'STRING' }, tip: { type: 'STRING' } }, required: ['area', 'tip'] } },
+    sky_event: { type: 'STRING' },
+  },
+  required: ['headline', 'personal_horoscope', 'focus_pills', 'sky_event'],
+}
+
+const BODY = (prompt: string, withSchema: boolean) => JSON.stringify({
+  contents: [{ role: 'user', parts: [{ text: prompt }] }],
+  generationConfig: { temperature: 0.7, responseMimeType: 'application/json', ...(withSchema ? { responseSchema: SCHEMA } : {}) },
+})
