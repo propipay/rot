@@ -3,18 +3,23 @@ import { hm, nowInCaracas } from '../lib/time'
 import type { DailyLog, Profile } from '../lib/store'
 import { sleepHours } from '../lib/store'
 import type { Sub } from './Bienestar'
+import { mealSummary, type Meal } from '../lib/nutrition'
+import { streakParts, type HabitsState } from '../lib/habits'
 
 const DAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
 
-type Props = { log: DailyLog; profile: Profile; onSave: (l: DailyLog) => void; onOpen: (s: Sub) => void }
+type Props = { log: DailyLog; profile: Profile; meals: Meal[]; habits: HabitsState; onSave: (l: DailyLog) => void; onOpen: (s: Sub) => void; onHabits: () => void }
 
-export function Hoy({ log, profile, onSave, onOpen }: Props) {
+export function Hoy({ log, profile, meals, habits, onSave, onOpen, onHabits }: Props) {
   const { minutes, weekday } = nowInCaracas()
   const blocks = blocksFor(weekday)
   const current = blocks.find((b) => minutes >= hm(b.start) && minutes < hm(b.end))
   const next = blocks.find((b) => hm(b.start) > minutes)
   const focus = current ?? next
   const sleep = sleepHours(log.sleep_start, log.sleep_end)
+  const food = mealSummary(meals)
+  const quit = habits.habits.find((h) => h.type === 'quit_streak')
+  const streak = quit?.started_at ? streakParts(quit.started_at) : null
 
   return (
     <section className="hoy">
@@ -41,6 +46,8 @@ export function Hoy({ log, profile, onSave, onOpen }: Props) {
           <Stat label="Agua" value={`${(log.water_ml / 1000).toFixed(1)} L`} pct={log.water_ml / profile.water_goal_ml} onClick={() => onOpen('agua')} />
           <Stat label="Ejercicio" value={`${log.exercise_min} min`} pct={log.exercise_min / profile.exercise_goal_min} onClick={() => onOpen('ejercicio')} />
           <Stat label="Sueño" value={sleep ? `${sleep} h` : '—'} pct={sleep ? sleep / profile.sleep_goal_h : 0} onClick={() => onOpen('sueno')} />
+          <Stat label="Nutrición" value={`${food.main}/3`} pct={food.main / 3} onClick={() => onOpen('nutricion')} />
+          {quit && <Stat label={quit.name} value={streak ? `${streak.days} d ${streak.hours} h` : 'Configurar'} pct={streak ? streak.progress : 0} onClick={onHabits} />}
         </div>
 
         <h3>Gratitud de hoy</h3>

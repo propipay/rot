@@ -3,6 +3,9 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
 import { DEFAULT_PROFILE, clearLocal, emptyLog, flushPending, loadLog, loadProfile, saveLog, saveProfile, type DailyLog, type Profile } from './lib/store'
 import { todayKey } from './lib/time'
+import { flushOutbox } from './lib/sync'
+import { loadMeals, type Meal } from './lib/nutrition'
+import { loadHabits, type HabitsState } from './lib/habits'
 import { TabBar, type Tab } from './components/TabBar'
 import { Hoy } from './screens/Hoy'
 import { Bienestar, type Sub } from './screens/Bienestar'
@@ -33,10 +36,15 @@ function Panel({ email }: { email: string | null }) {
   const [day] = useState(todayKey())
   const [log, setLog] = useState<DailyLog>(emptyLog(day))
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE)
+  const [meals, setMeals] = useState<Meal[]>([])
+  const [habits, setHabits] = useState<HabitsState>({ habits: [], logs: [] })
   const timer = useRef<number | null>(null)
 
   useEffect(() => {
-    const refresh = () => flushPending().then(() => { loadLog(day).then(setLog); loadProfile().then(setProfile) })
+    const refresh = () => flushPending().then(() => {
+      loadLog(day).then(setLog); loadProfile().then(setProfile)
+      loadMeals(day).then(setMeals); loadHabits().then(setHabits)
+    })
     refresh()
     window.addEventListener('online', refresh)
     return () => window.removeEventListener('online', refresh)
@@ -54,6 +62,7 @@ function Panel({ email }: { email: string | null }) {
   const signOut = async () => {
     if (timer.current) { clearTimeout(timer.current); await saveLog(log) }
     await flushPending()
+    await flushOutbox()
     clearLocal()
     await supabase?.auth.signOut()
   }
@@ -62,9 +71,9 @@ function Panel({ email }: { email: string | null }) {
     <div className="app">
       <TabBar tab={tab} onChange={go} />
       <main>
-        {tab === 'hoy' && <Hoy log={log} profile={profile} onSave={updateLog} onOpen={(s) => { setSub(s); go('bienestar') }} />}
-        {tab === 'bienestar' && <Bienestar sub={sub} onSub={setSub} log={log} profile={profile} onSave={updateLog} />}
-        {tab === 'habitos' && <Habitos />}
+        {tab === 'hoy' && <Hoy log={log} profile={profile} meals={meals} habits={habits} onSave={updateLog} onOpen={(s) => { setSub(s); go('bienestar') }} onHabits={() => go('habitos')} />}
+        {tab === 'bienestar' && <Bienestar sub={sub} onSub={setSub} log={log} profile={profile} onSave={updateLog} meals={meals} onMeals={setMeals} />}
+        {tab === 'habitos' && <Habitos state={habits} onChange={setHabits} />}
         {tab === 'cielo' && <Cielo />}
         {tab === 'mas' && <Mas profile={profile} onSave={updateProfile} email={email} onSignOut={signOut} />}
       </main>

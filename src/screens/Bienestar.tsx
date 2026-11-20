@@ -2,7 +2,8 @@ import type { DailyLog, Profile } from '../lib/store'
 import { Agua } from './Agua'
 import { Ejercicio } from './Ejercicio'
 import { Sueno } from './Sueno'
-import { Pronto } from '../components/Pronto'
+import { Nutricion } from './Nutricion'
+import type { Meal } from '../lib/nutrition'
 
 export type Sub = 'agua' | 'nutricion' | 'ejercicio' | 'sueno'
 const SUBS: { id: Sub; label: string }[] = [
@@ -12,9 +13,9 @@ const SUBS: { id: Sub; label: string }[] = [
   { id: 'sueno', label: 'Sueño' },
 ]
 
-type Props = { sub: Sub; onSub: (s: Sub) => void; log: DailyLog; profile: Profile; onSave: (l: DailyLog) => void }
+type Props = { sub: Sub; onSub: (s: Sub) => void; log: DailyLog; profile: Profile; onSave: (l: DailyLog) => void; meals: Meal[]; onMeals: (m: Meal[]) => void }
 
-export function Bienestar({ sub, onSub, log, profile, onSave }: Props) {
+export function Bienestar({ sub, onSub, log, profile, onSave, meals, onMeals }: Props) {
   return (
     <section>
       <h1 className="serif">Bienestar</h1>
@@ -24,11 +25,7 @@ export function Bienestar({ sub, onSub, log, profile, onSave }: Props) {
         ))}
       </div>
       {sub === 'agua' && <Agua log={log} profile={profile} onSave={onSave} />}
-      {sub === 'nutricion' && (
-        <Pronto titulo="Nutrición consciente">
-          Registro en menos de 10 segundos por comida: sin pantallas, proteína, vegetales y cómo te sentiste de energía.
-        </Pronto>
-      )}
+      {sub === 'nutricion' && <Nutricion day={log.day} meals={meals} onChange={onMeals} />}
       {sub === 'ejercicio' && <Ejercicio log={log} profile={profile} onSave={onSave} />}
       {sub === 'sueno' && <Sueno log={log} profile={profile} onSave={onSave} />}
     </section>
