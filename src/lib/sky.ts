@@ -5,6 +5,7 @@ import { todayKey } from './time'
 // Mismo formato que devuelve la función generate-daily-sky
 export type Astronomy = {
   date: string
+  place?: string
   moon: { phase: string; angle: number; illumination_pct: number; waxing: boolean; sign: string; next_full: string; days_to_full: number; next_new: string; days_to_new: number }
   sun: { sign: string; sunrise: string | null; sunset: string | null }
   upcoming: { date: string; title: string; detail: string }[]
@@ -32,8 +33,38 @@ function retryDue(): boolean {
   return true
 }
 
-async function generate(force: boolean): Promise<SkyInsight> {
-  const { data, error } = await supabase!.functions.invoke<SkyInsight>('generate-daily-sky', { body: { force } })
+// ---------- Ubicación del teléfono (opcional) ----------
+export type Coords = { lat: number; lng: number }
+const round = (n: number) => Math.round(n * 100) / 100 // ~1 km: suficiente para amanecer y atardecer
+
+/** Pide la ubicación al teléfono (muestra el permiso si hace falta) */
+export function askPosition(): Promise<Coords | null> {
+  return new Promise((resolve) => {
+    if (!('geolocation' in navigator)) return resolve(null)
+    navigator.geolocation.getCurrentPosition(
+      (p) => resolve({ lat: round(p.coords.latitude), lng: round(p.coords.longitude) }),
+      () => resolve(null),
+      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 6 * 3600_000 },
+    )
+  })
+}
+
+/** Estado del permiso sin preguntar nada */
+export async function geoPermission(): Promise<PermissionState | 'unsupported'> {
+  try {
+    if (!('geolocation' in navigator) || !navigator.permissions) return 'unsupported'
+    return (await navigator.permissions.query({ name: 'geolocation' })).state
+  } catch {
+    return 'unsupported'
+  }
+}
+
+// Solo usa la ubicación si el permiso ya está dado: nunca interrumpe con la pregunta
+const silentPosition = async () => ((await geoPermission()) === 'granted' ? askPosition() : null)
+
+async function generate(force: boolean, coords?: Coords | null): Promise<SkyInsight> {
+  const where = coords ?? (await silentPosition())
+  const { data, error } = await supabase!.functions.invoke<SkyInsight>('generate-daily-sky', { body: { force, ...(where ?? {}) } })
   if (error || !data) throw error ?? new Error('Sin datos')
   return data
 }
@@ -42,7 +73,7 @@ async function generate(force: boolean): Promise<SkyInsight> {
  * Caché primero: teléfono → tabla daily_sky_insights → función (una sola vez al día).
  * `force` pide una lectura nueva (botón "Actualizar").
  */
-export async function loadSky(force = false): Promise<SkyInsight | null> {
+export async function loadSky(force = false, coords?: Coords | null): Promise<SkyInsight | null> {
   const local = cachedSky()
   if (!supabase) return local
   try {
@@ -52,7 +83,7 @@ export async function loadSky(force = false): Promise<SkyInsight | null> {
       if (error) throw error
       row = data as SkyInsight | null
     }
-    if (!row) row = await generate(force)
+    if (!row) row = await generate(force, coords)
     else if (row.horoscope_json?.source === 'basico' && retryDue()) row = await generate(false)
     cache.set('sky', row)
     return row

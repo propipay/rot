@@ -30,7 +30,11 @@ Deno.serve(async (req) => {
   const { data: u, error: ue } = await sb.auth.getUser()
   if (ue || !u.user) return json({ error: 'Sesión inválida' }, 401)
 
-  const { force } = await req.json().catch(() => ({ force: false }))
+  const body = await req.json().catch(() => ({})) as { force?: boolean; lat?: unknown; lng?: unknown }
+  const force = body.force === true
+  // Ubicación del teléfono (opcional, ya redondeada a ~1 km); si no llega, la del perfil
+  const phone = typeof body.lat === 'number' && typeof body.lng === 'number' && Math.abs(body.lat) <= 90 && Math.abs(body.lng) <= 180
+    ? { lat: Math.round(body.lat * 100) / 100, lng: Math.round(body.lng * 100) / 100 } : null
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Caracas' }).format(new Date())
 
   const { data: prof } = await sb.from('astro_profile').select('profile_json').maybeSingle()
@@ -44,16 +48,17 @@ Deno.serve(async (req) => {
   }
 
   const profile = (prof?.profile_json ?? {}) as Record<string, any>
-  const loc = profile.location_default ?? { lat: 10.4806, lng: -66.9036 } // Caracas por defecto
+  const loc = phone ?? profile.location_default ?? { lat: 10.4806, lng: -66.9036 } // Caracas por defecto
+  const place = phone ? 'tu ubicación actual' : String(profile.location_default?.city ?? 'Caracas')
 
   const { data: curated } = await sb.from('astronomical_events').select('event_date,title,description').gte('event_date', today).order('event_date').limit(20)
-  const sky = computeSky(new Date(), loc.lat, loc.lng, curated ?? [])
+  const sky: Astronomy = { ...computeSky(new Date(), loc.lat, loc.lng, curated ?? []), place }
 
   let horoscope: Horoscope = basic(sky)
   if (key && prof) {
     // A Gemini solo va la carta (sin fecha de nacimiento ni ubicación)
     const { birth_date: _b, location_default: _l, timezone: _t, ...chart } = profile
-    try { horoscope = await gemini(key, chart, sky) } catch (e) { console.error('Gemini falló, uso lectura básica:', (e as Error).message) }
+    try { horoscope = await gemini(key, chart, { ...sky, place: undefined }) } catch (e) { console.error('Gemini falló, uso lectura básica:', (e as Error).message) }
   }
 
   const row = { user_id: u.user.id, insight_date: today, astronomy_json: sky, horoscope_json: horoscope }

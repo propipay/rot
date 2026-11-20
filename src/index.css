@@ -191,6 +191,8 @@ input, textarea { font: inherit; padding: 12px; border-radius: 10px; border: 1px
 .sol svg { margin-top: 2px; opacity: .8; flex: none; }
 .sol small { display: block; font-size: .72rem; opacity: .7; }
 .sol strong { font-size: .92rem; font-weight: 600; white-space: nowrap; }
+.lugar { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; font-size: .8rem; opacity: .75; }
+.enlace-boton { background: none; color: inherit; min-height: 36px; padding: 4px 8px; margin-left: auto; font-size: .8rem; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; border-radius: 8px; }
 .lectura h2 { margin: 4px 0 8px; font-size: 1.35rem; line-height: 1.25; }
 .lectura > p { line-height: 1.6; }
 .pildoras { list-style: none; padding: 0; margin: 16px 0; display: grid; gap: 8px; }
@@ -238,3 +240,30 @@ input, textarea { font: inherit; padding: 12px; border-radius: 10px; border: 1px
   .posiciones { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .girando svg, .flecha { animation: none; transition: none; } }
+
+/* ---------- Recordatorios ---------- */
+.agenda-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.agenda-cabecera h3 { margin-bottom: 0; }
+.rec-form > label:first-child { margin-top: 0; }
+.rec-form .segmented { margin: 8px 0 4px; }
+.rec-form .segmented button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.rec-form button[type="submit"] { width: 100%; margin-top: 4px; }
+.rec-form button[type="submit"]:disabled { opacity: .5; cursor: default; }
+.fila-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.fila-2 label { margin: 12px 0 0; min-width: 0; }
+.fila-2 input { min-width: 0; }
+.recordatorios { list-style: none; margin: 0; padding: 0; }
+.recordatorios li { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.rec-icono { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.rec-texto { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.rec-texto strong { overflow-wrap: anywhere; }
+.estado { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: .82rem; color: var(--muted); }
+.estado.ok { color: var(--ok); font-weight: 600; }
+.estado.error { color: var(--accent); font-weight: 600; }
+.estado .detalle { flex-basis: 100%; font-weight: 400; overflow-wrap: anywhere; }
+.chip.pequeno-chip { min-height: 32px; padding: 4px 10px; font-size: .8rem; }
+.icono.peligro { color: var(--accent); min-width: 72px; }
+.confirmar { font-size: .85rem; font-weight: 600; }
+.anteriores { margin: 16px 0; }
+.anteriores summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+.anteriores .recordatorios { opacity: .75; }

@@ -22,6 +22,7 @@ function phaseName(angle: number): string {
 
 export type Astronomy = {
   date: string
+  place?: string // para dónde se calculó amanecer y atardecer
   moon: { phase: string; angle: number; illumination_pct: number; waxing: boolean; sign: string; next_full: string; days_to_full: number; next_new: string; days_to_new: number }
   sun: { sign: string; sunrise: string | null; sunset: string | null }
   upcoming: { date: string; title: string; detail: string }[]
